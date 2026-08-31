@@ -58,8 +58,8 @@ Landing → Dashboard (avg fit, top matches, skill gaps)
 
 ## 🚀 Features
 
-### 🎯 Smart Fit Scoring
-Multi-dimensional matching with skill-synonym expansion (`js ↔ javascript`, `k8s ↔ kubernetes`, `ml ↔ machine learning`). Every job gets an `overall` score plus `skills / experience / location / salary` breakdowns with colored progress bars and a `FitRing` SVG.
+### 🎯 Explainable Smart Fit Scoring
+Multi-dimensional matching with skill-synonym expansion (`js ↔ javascript`, `k8s ↔ kubernetes`, `ml ↔ machine learning`). Every job gets an `overall` score plus `skills / experience / location / salary` breakdowns, a confidence level, evidence-backed strengths and gaps, and concrete next-best actions before applying.
 
 ### 📋 Kanban Application Tracking
 6 stages: `Saved → Applied → Screening → Interview → Offer → Rejected`. Native drag-and-drop, instant `PATCH /api/applications` persistence, unapplied jobs listed for one-click save.
@@ -190,6 +190,9 @@ app/api/
 - [ ] Email/Gmail sync for status updates
 - [ ] Charts with Recharts / D3
 - [ ] Tests (Vitest + Playwright)
+- [x] Explainable match scoring with confidence, evidence signals, and recommendations
+- [x] Health endpoint for deployment monitoring
+- [x] GitHub Actions CI for type checking and production builds
 
 PRs welcome — see [CONTRIBUTING](#contributing) below.
 
