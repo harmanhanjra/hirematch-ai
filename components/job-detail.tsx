@@ -89,6 +89,41 @@ export function JobDetail({
             </div>
           )}
 
+          {job.fit && (
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">Why this score</h3>
+                <Badge color={job.fit.confidence === "high" ? "green" : "gray"}>
+                  {job.fit.confidence} confidence
+                </Badge>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{job.fit.summary}</p>
+
+              <div className="mt-4 grid gap-2">
+                {job.fit.signals.map((signal, index) => (
+                  <div key={`${signal.category}-${index}`} className="rounded-lg border border-border bg-card p-3">
+                    <div className="flex items-center gap-2">
+                      <span aria-hidden="true">{signal.kind === "strength" ? "✓" : signal.kind === "gap" ? "!" : "•"}</span>
+                      <span className="text-sm font-medium">{signal.label}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{signal.detail}</p>
+                  </div>
+                ))}
+              </div>
+
+              {job.fit.recommendations.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next best actions</h4>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {job.fit.recommendations.map((recommendation) => (
+                      <li key={recommendation}>• {recommendation}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           <div>
             <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Description</h3>
             <p className="whitespace-pre-wrap text-sm">{job.description}</p>
