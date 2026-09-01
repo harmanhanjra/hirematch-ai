@@ -87,12 +87,16 @@ function addSignal(
 
 export function computeFit(profile: Profile, job: Job): FitBreakdown {
   const profileSkills = profile.skills.map(normalizeSkill);
-  const requiredSkills = job.skillsRequired.length
-    ? job.skillsRequired.map(normalizeSkill)
-    : extractSkillsFromText(
-        job.description,
-        profile.skills.length ? profile.skills : ["typescript", "react", "node"]
-      ).map(normalizeSkill);
+  const requiredSkills = Array.from(
+    new Set(
+      job.skillsRequired.length
+        ? job.skillsRequired.map(normalizeSkill)
+        : extractSkillsFromText(
+            job.description,
+            profile.skills.length ? profile.skills : ["typescript", "react", "node"]
+          ).map(normalizeSkill)
+    )
+  );
 
   const matched = new Set<string>();
   const missing: string[] = [];

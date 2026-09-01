@@ -133,6 +133,7 @@ cp .env.example .env.local
 
 ```bash
 npm run dev      # http://localhost:3000
+npm test         # deterministic matching-engine unit tests
 npm run build    # production build (15 routes)
 npm start        # serve production (after build)
 npx tsc --noEmit # type check
@@ -193,7 +194,8 @@ app/api/
 - [ ] Interview prep (STAR builder, mock interview)
 - [ ] Email/Gmail sync for status updates
 - [ ] Charts with Recharts / D3
-- [ ] Tests (Vitest + Playwright)
+- [x] Matching-engine unit tests with Vitest, enforced in CI
+- [ ] End-to-end tests with Playwright
 - [x] Explainable match scoring with confidence, evidence signals, and recommendations
 - [x] Health endpoint for deployment monitoring
 - [x] GitHub Actions CI for type checking and production builds
