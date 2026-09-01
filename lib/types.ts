@@ -30,8 +30,8 @@ export interface Profile {
   location: string | null;
   remotePreference: "remote" | "hybrid" | "onsite" | "any" | null;
   yearsExperience: number | null;
-  skills: string[]; // json-encoded
-  targetRoles: string[]; // json-encoded
+  skills: string[];
+  targetRoles: string[];
   salaryMin: number | null;
   salaryMax: number | null;
   resumeText: string | null;
@@ -48,7 +48,7 @@ export interface Job {
   salaryMin: number | null;
   salaryMax: number | null;
   description: string;
-  skillsRequired: string[]; // json-encoded
+  skillsRequired: string[];
   source: string;
   postedAt: string;
   createdAt: string;
@@ -64,6 +64,15 @@ export interface Application {
   updatedAt: string;
 }
 
+export type FitSignalKind = "strength" | "gap" | "neutral";
+
+export interface FitSignal {
+  kind: FitSignalKind;
+  category: "skills" | "experience" | "location" | "salary";
+  label: string;
+  detail: string;
+}
+
 export interface FitBreakdown {
   skills: number;
   experience: number;
@@ -72,6 +81,10 @@ export interface FitBreakdown {
   overall: number;
   matchedSkills: string[];
   missingSkills: string[];
+  confidence: "low" | "medium" | "high";
+  summary: string;
+  signals: FitSignal[];
+  recommendations: string[];
 }
 
 export interface JobWithFit extends Job {

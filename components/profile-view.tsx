@@ -314,6 +314,23 @@ export function ProfileView() {
 
       <Card className="p-6">
         <CardHeader
+          title="Resume / CV text"
+          subtitle="Paste your current resume text so HireMatch can run ATS analysis against each job"
+          className="p-0 pb-4"
+        />
+        <Textarea
+          value={profile.resumeText ?? ""}
+          onChange={(e) => setProfile({ ...profile, resumeText: e.target.value })}
+          placeholder="Paste your resume text here..."
+          className="min-h-64"
+        />
+        <p className="mt-2 text-xs text-muted-foreground">
+          Keep this factual. HireMatch uses it for keyword coverage, structure, and measurable-impact analysis.
+        </p>
+      </Card>
+
+      <Card className="p-6">
+        <CardHeader
           title="Target roles"
           subtitle="What roles are you looking for?"
           className="p-0 pb-4"

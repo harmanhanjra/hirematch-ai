@@ -58,11 +58,14 @@ Landing → Dashboard (avg fit, top matches, skill gaps)
 
 ## 🚀 Features
 
-### 🎯 Smart Fit Scoring
-Multi-dimensional matching with skill-synonym expansion (`js ↔ javascript`, `k8s ↔ kubernetes`, `ml ↔ machine learning`). Every job gets an `overall` score plus `skills / experience / location / salary` breakdowns with colored progress bars and a `FitRing` SVG.
+### 🎯 Explainable Smart Fit Scoring
+Multi-dimensional matching with skill-synonym expansion (`js ↔ javascript`, `k8s ↔ kubernetes`, `ml ↔ machine learning`). Every job gets an `overall` score plus `skills / experience / location / salary` breakdowns, a confidence level, evidence-backed strengths and gaps, and concrete next-best actions before applying.
 
 ### 📋 Kanban Application Tracking
 6 stages: `Saved → Applied → Screening → Interview → Offer → Rejected`. Native drag-and-drop, instant `PATCH /api/applications` persistence, unapplied jobs listed for one-click save.
+
+### 🧾 ATS Resume Analyzer
+Compare the resume text saved in your profile against any job. HireMatch scores keyword coverage, ATS-friendly structure, and measurable impact, then highlights missing keywords and concrete fixes before you apply.
 
 ### 📄 AI Document Generation (NVIDIA NIM)
 - **Resume** from your profile — `POST /api/ai { generateResume: true }`
@@ -156,7 +159,8 @@ app/
 lib/
   db.ts        → SQLite: users, profiles, jobs, applications, documents, sessions (WAL)
   repo.ts      → CRUD (prepared statements, upserts, transactions)
-  matching.ts  → computeFit(profile, job) + synonym map
+  matching.ts  → explainable computeFit(profile, job) + synonym map
+  ats.ts       → deterministic ATS resume analysis
   ai/nvidia.ts → chat(messages) → NVIDIA NIM or stubChat
   auth.ts      → cookie sessions (jm_session, 30d) + ensureDemoUser
   documents.ts → resume/cover generation (AI → template fallback)
@@ -164,7 +168,7 @@ lib/
   types.ts     → Stage, User, Profile, Job, Application, FitBreakdown, JobWithFit
 
 app/api/
-  auth, profile, jobs, applications, ai, documents, stats  (all force-dynamic)
+  auth, profile, jobs, applications, ai, ats, documents, stats, health
 ```
 
 **Auth:** No login wall. First request auto-creates `demo@jobmatch.app` + `jm_session` cookie. Add real auth later by swapping `ensureDemoUser`.
@@ -185,11 +189,14 @@ app/api/
 
 - [ ] Real auth (NextAuth / Clerk) + multi-user
 - [ ] Job scraping (company career pages, Greenhouse/Lever)
-- [ ] ATS keyword heatmap + resume scoring
+- [x] ATS resume scoring with keyword, structure, and impact analysis
 - [ ] Interview prep (STAR builder, mock interview)
 - [ ] Email/Gmail sync for status updates
 - [ ] Charts with Recharts / D3
 - [ ] Tests (Vitest + Playwright)
+- [x] Explainable match scoring with confidence, evidence signals, and recommendations
+- [x] Health endpoint for deployment monitoring
+- [x] GitHub Actions CI for type checking and production builds
 
 PRs welcome — see [CONTRIBUTING](#contributing) below.
 

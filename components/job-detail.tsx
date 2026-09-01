@@ -32,6 +32,9 @@ export function JobDetail({
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [generatingCover, setGeneratingCover] = useState(false);
   const [stage, setStage] = useState<Stage>(job.appliedStage ?? "saved");
+  const [ats, setAts] = useState<any>(null);
+  const [atsError, setAtsError] = useState<string | null>(null);
+  const [analyzingAts, setAnalyzingAts] = useState(false);
 
   const generateCover = async () => {
     setGeneratingCover(true);
@@ -43,6 +46,24 @@ export function JobDetail({
     const data = await res.json();
     setCoverLetter(data.content ?? "");
     setGeneratingCover(false);
+  };
+
+  const analyzeAts = async () => {
+    setAnalyzingAts(true);
+    setAtsError(null);
+    const res = await fetch("/api/ats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobId: job.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setAts(null);
+      setAtsError(data.error ?? "ATS analysis failed.");
+    } else {
+      setAts(data.analysis);
+    }
+    setAnalyzingAts(false);
   };
 
   const changeStage = (s: string) => {
@@ -89,6 +110,41 @@ export function JobDetail({
             </div>
           )}
 
+          {job.fit && (
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">Why this score</h3>
+                <Badge color={job.fit.confidence === "high" ? "green" : "gray"}>
+                  {job.fit.confidence} confidence
+                </Badge>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{job.fit.summary}</p>
+
+              <div className="mt-4 grid gap-2">
+                {job.fit.signals.map((signal, index) => (
+                  <div key={`${signal.category}-${index}`} className="rounded-lg border border-border bg-card p-3">
+                    <div className="flex items-center gap-2">
+                      <span aria-hidden="true">{signal.kind === "strength" ? "✓" : signal.kind === "gap" ? "!" : "•"}</span>
+                      <span className="text-sm font-medium">{signal.label}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{signal.detail}</p>
+                  </div>
+                ))}
+              </div>
+
+              {job.fit.recommendations.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Next best actions</h4>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {job.fit.recommendations.map((recommendation) => (
+                      <li key={recommendation}>• {recommendation}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           <div>
             <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Description</h3>
             <p className="whitespace-pre-wrap text-sm">{job.description}</p>
@@ -100,6 +156,67 @@ export function JobDetail({
                 {s}
               </Badge>
             ))}
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold">ATS Resume Analyzer</h3>
+                <p className="text-xs text-muted-foreground">
+                  Compare your saved resume text with this job before applying.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" loading={analyzingAts} onClick={analyzeAts}>
+                Analyze resume
+              </Button>
+            </div>
+
+            {atsError && <p className="mt-3 text-sm text-amber-600">{atsError}</p>}
+
+            {ats && (
+              <div className="mt-4 space-y-4">
+                <div className="grid gap-3 sm:grid-cols-4">
+                  {[
+                    { label: "ATS score", value: ats.score },
+                    { label: "Keywords", value: ats.keywordScore },
+                    { label: "Structure", value: ats.structureScore },
+                    { label: "Impact", value: ats.impactScore },
+                  ].map((metric) => (
+                    <div key={metric.label}>
+                      <div className="mb-1 flex justify-between text-xs">
+                        <span className="text-muted-foreground">{metric.label}</span>
+                        <span>{metric.value}%</span>
+                      </div>
+                      <ProgressBar value={metric.value} />
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Missing keywords
+                  </h4>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {ats.missingKeywords.length ? ats.missingKeywords.slice(0, 10).map((keyword: string) => (
+                      <Badge key={keyword} color="gray">{keyword}</Badge>
+                    )) : <span className="text-sm text-muted-foreground">No major keyword gaps detected.</span>}
+                  </div>
+                </div>
+
+                {ats.recommendations.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Resume improvements
+                    </h4>
+                    <ul className="mt-2 space-y-1 text-sm">
+                      {ats.recommendations.map((recommendation: string) => (
+                        <li key={recommendation}>• {recommendation}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
