@@ -72,6 +72,9 @@ Compare the resume text saved in your profile against any job. HireMatch scores 
 - **Cover letter** per job — tailored to `matchedSkills` vs `missingSkills`
 - Model: `nvidia/nemotron-3-nano-30b-a3b` via `https://integrate.api.nvidia.com/v1/chat/completions` (OpenAI-compatible). Falls back to a local template when `NVIDIA_API_KEY` is unset — always works offline.
 
+### 🔐 Hardened Demo Sessions
+Browser session tokens use 256 bits of cryptographic randomness and are stored in SQLite only as SHA-256 hashes, so a database leak does not reveal active bearer tokens. Cookies are `HttpOnly`, `SameSite=Lax`, `Secure` in production, expired sessions are cleaned up opportunistically, and `DELETE /api/auth` revokes the current session.
+
 ### 📊 Analytics
 Funnel by stage, conversion `%`, average fit, top-6 matches, and **skill demand vs. gaps** (most-requested skills you haven't listed).
 
@@ -163,7 +166,7 @@ lib/
   matching.ts  → explainable computeFit(profile, job) + synonym map
   ats.ts       → deterministic ATS resume analysis
   ai/nvidia.ts → chat(messages) → NVIDIA NIM or stubChat
-  auth.ts      → cookie sessions (jm_session, 30d) + ensureDemoUser
+  auth.ts      → hashed 30-day cookie sessions + demo-user fallback
   documents.ts → resume/cover generation (AI → template fallback)
   seed.ts      → 12 realistic jobs
   types.ts     → Stage, User, Profile, Job, Application, FitBreakdown, JobWithFit
@@ -172,7 +175,7 @@ app/api/
   auth, profile, jobs, applications, ai, ats, documents, stats, health
 ```
 
-**Auth:** No login wall. First request auto-creates `demo@jobmatch.app` + `jm_session` cookie. Add real auth later by swapping `ensureDemoUser`.
+**Auth:** There is still no real identity-provider login wall. First request can fall back to the shared demo user, while explicit demo sessions use hardened, revocable cookies. Replace `ensureDemoUser` with Auth.js/Clerk before treating this as a real multi-user production service.
 
 ---
 
@@ -197,6 +200,7 @@ app/api/
 - [x] Matching-engine unit tests with Vitest, enforced in CI
 - [ ] End-to-end tests with Playwright
 - [x] Explainable match scoring with confidence, evidence signals, and recommendations
+- [x] Hardened hashed session tokens + explicit logout/revocation
 - [x] Health endpoint for deployment monitoring
 - [x] GitHub Actions CI for type checking and production builds
 
