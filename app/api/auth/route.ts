@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
-import { createSession, sessionCookieName } from "@/lib/auth";
+import { createSession, deleteSession, sessionCookieName } from "@/lib/auth";
 import { getOrCreateUser } from "@/lib/repo";
 
 const schema = z.object({
   email: z.string().email(),
   name: z.string().optional(),
 });
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30,
+};
 
 export async function POST(request: Request) {
   const raw = await request.json().catch(() => ({}));
@@ -19,14 +28,25 @@ export async function POST(request: Request) {
   }
 
   const user = getOrCreateUser(parsed.data.email, parsed.data.name ?? null);
-  const sessionId = createSession(user.id);
+  const sessionToken = createSession(user.id);
 
   const res = NextResponse.json({ user }, { status: 200 });
-  res.cookies.set(sessionCookieName, sessionId, {
+  res.cookies.set(sessionCookieName, sessionToken, cookieOptions);
+  return res;
+}
+
+export async function DELETE() {
+  const store = await cookies();
+  const sessionToken = store.get(sessionCookieName)?.value;
+  if (sessionToken) deleteSession(sessionToken);
+
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(sessionCookieName, "", {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 0,
   });
   return res;
 }
