@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSecurityHeaders } from "@/lib/security-headers";
+import { getSecurityHeaders } from "../lib/security-headers";
 
 describe("security headers", () => {
   it("applies baseline browser hardening in every environment", () => {
